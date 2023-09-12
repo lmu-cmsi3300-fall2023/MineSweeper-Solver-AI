@@ -44,6 +44,18 @@ class MazeClause:
         # [!] TODO: Complete the MazeClause constructor that appropriately
         # builds the dictionary of propositions and manages the valid
         # attribute according to the spec
+        
+    def __init__(self, props: Sequence[tuple]):
+        self.props: dict[tuple[str, tuple[int, int]], bool] = dict()
+        self.valid: bool = False
+        
+        for prop, truth_value in self.props.values():
+            self.props[prop] = truth_value
+            
+        for truth_value in self.props.values():
+            if truth_value:
+                self.valid = True
+                break
     
     def get_prop(self, prop: tuple[str, tuple[int, int]]) -> Optional[bool]:
         """
@@ -149,6 +161,18 @@ class MazeClause:
 
     @staticmethod
     def resolve(c1: "MazeClause", c2: "MazeClause") -> set["MazeClause"]:
+        result_clauses = set()
+        
+        for prop1 in c1.props:
+            for prop2 in c2.props:
+                if prop1[0] == prop2[0] and c1.props[prop1] != c2.props[prop2]:
+                    new_props = {p: c1.props[p] for p in c1.props if p != prop1}
+                    new_props.update({p: c2.props[p] for p in c2.props if p != prop2})
+                    new_clause = MazeClause(new_props)
+
+                if not new_clause.is_valid() and not new_clause.is_empty():
+                    result_clauses.add(new_clause)
+        return result_clauses
         """
         Returns the set of non-valid MazeClauses that result from applying 
         resolution to the two input.
