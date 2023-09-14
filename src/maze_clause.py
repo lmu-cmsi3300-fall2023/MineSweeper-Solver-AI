@@ -166,7 +166,7 @@ class MazeClause:
 
     @staticmethod
     def resolve(c1: "MazeClause", c2: "MazeClause") -> set["MazeClause"]:
-        result_clauses = set()
+        result_clauses:set = set() 
 
         for prop1 in c1.props:
             for prop2 in c2.props:
@@ -181,7 +181,7 @@ class MazeClause:
                     else:
                         return {new_clause}
 
-        return {}
+        return set()
     
 
 
