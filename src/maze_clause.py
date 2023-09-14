@@ -12,9 +12,14 @@ class MazeClause:
         self.props: dict[tuple[str, tuple[int, int]], bool] = dict()
         self.valid: bool = False
         for prop, truth_value in props:
+            if(prop == self.prop and truth_value != self.truth_value):
+                truth_value = None
+                break
             self.props[prop] = truth_value
             if truth_value:
                 self.valid = True
+
+        print(props)
 
         
         """
