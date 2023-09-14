@@ -15,13 +15,11 @@ class MazeClause:
         for prop, truth_value in props:
             if prop in self.props:
                 if self.props[prop] != truth_value:
-                    self.valid = False
-                    del self.props[prop]
+                    self.props = {}
+                    self.valid = True
                     break
             else:
                 self.props[prop] = truth_value
-                if truth_value:
-                    self.valid = True
 
         
         """
@@ -170,15 +168,16 @@ class MazeClause:
             for prop2 in c2.props:
                 new_clause = None  
 
-                if prop1[0] == prop2[0] and c1.props[prop1] != c2.props[prop2]:
-                    new_props = {p: c1.props[p] for p in c1.props if p != prop1}
-                    new_props.update({p: c2.props[p] for p in c2.props if p != prop2})
-                    new_clause = MazeClause(list(new_props.items()))  
+                if prop1 == prop2 and c1.props[prop1] != c2.props[prop2]:
+                    new_props = [(p, c1.props[p]) for p in c1.props if p != prop1]
+                    new_props += [(p, c2.props[p]) for p in c2.props if p != prop2]
+                    new_clause = MazeClause(new_props) 
+                    if new_clause.is_valid():
+                        return set()
+                    else:
+                        return {new_clause}
 
-                if new_clause is not None and not new_clause.is_valid():
-                    result_clauses.add(new_clause)
-
-        return result_clauses
+        return {}
 
 
         """
