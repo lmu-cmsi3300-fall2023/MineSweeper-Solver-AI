@@ -11,15 +11,17 @@ class MazeClause:
     def __init__(self, props: Sequence[tuple]):
         self.props: dict[tuple[str, tuple[int, int]], bool] = dict()
         self.valid: bool = False
-        for prop, truth_value in props:
-            if(prop == self.prop and truth_value != self.truth_value):
-                truth_value = None
-                break
-            self.props[prop] = truth_value
-            if truth_value:
-                self.valid = True
 
-        print(props)
+        for prop, truth_value in props:
+            if prop in self.props:
+                if self.props[prop] != truth_value:
+                    self.valid = False
+                    del self.props[prop]
+                    break
+            else:
+                self.props[prop] = truth_value
+                if truth_value:
+                    self.valid = True
 
         
         """
