@@ -7,6 +7,9 @@ class MazeClause:
     MazePropositions (2-tuples of (symbol, location)) mapped to
     their negated status in the sentence.
     '''
+    # [!] TODO: Complete the MazeClause constructor that appropriately
+    # builds the dictionary of propositions and manages the valid
+    # attribute according to the spec
     
     def __init__(self, props: Sequence[tuple]):
         self.props: dict[tuple[str, tuple[int, int]], bool] = dict()
@@ -52,9 +55,7 @@ class MazeClause:
                 (("P", (1, 1)), True)
         """
         
-        # [!] TODO: Complete the MazeClause constructor that appropriately
-        # builds the dictionary of propositions and manages the valid
-        # attribute according to the spec
+
         
         
     
@@ -160,6 +161,9 @@ class MazeClause:
         """
         return len(self.props)
 
+
+    #[!] TODO! Implement the resolution procedure on 2 input clauses here!
+
     @staticmethod
     def resolve(c1: "MazeClause", c2: "MazeClause") -> set["MazeClause"]:
         result_clauses = set()
@@ -178,6 +182,7 @@ class MazeClause:
                         return {new_clause}
 
         return {}
+    
 
 
         """
@@ -202,6 +207,4 @@ class MazeClause:
                   containing propositions OR is the empty clause in the case that
                   c1 and c2 yield a contradiction.
         """
-        # [!] TODO! Implement the resolution procedure on 2 input clauses here!
-        return set()
 
