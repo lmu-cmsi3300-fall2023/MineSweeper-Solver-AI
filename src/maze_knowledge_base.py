@@ -54,11 +54,13 @@ class MazeKnowledgeBase:
         self.clauses.add(query)
         new = set()
 
-        while self.clauses:
-            for clause in self.clauses:
-                for other_clause in self.clauses:
-                    if clause != other_clause:
-                        resolvents = MazeClause.resolve(clause, other_clause)
+        while True:
+            new = set()
+            
+            for clause1 in self.clauses:
+                for clause2 in self.clauses:
+                    if clause1 != clause2:
+                        resolvents = MazeClause.resolve(clause1, clause2)
                         if not resolvents:
                             return True
                         new.update(resolvents)
@@ -68,7 +70,7 @@ class MazeKnowledgeBase:
 
             self.clauses.update(new)
 
-        return False
+            return False
 
 
     def __len__ (self) -> int:
