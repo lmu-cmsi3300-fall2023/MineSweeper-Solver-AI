@@ -64,12 +64,9 @@ class MazeKnowledgeBase:
                     resolvents = MazeClause.resolve(clause1, clause2)
                     if len(resolvents) == 0:
                         return True
-                    new.update(resolvents)
 
             if any(clause in self.clauses for clause in new):
                 return False
-
-            self.clauses.update(new)
 
             return False
 
