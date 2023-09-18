@@ -50,20 +50,21 @@ class MazeKnowledgeBase:
         """
         # [!] TODO: Implement the proof-by-contradiction knowledgebase
         # query procedure here!
-        #query should be false
+
+        #negating query
+        # for prop in query.props:
+        #     query.props[prop] = False
+        #combining query and KB
         self.clauses.add(query)
         new = set()
 
-        while True:
-            new = set()
-            
+        while True:            
             for clause1 in self.clauses:
                 for clause2 in self.clauses:
-                    if clause1 != clause2:
-                        resolvents = MazeClause.resolve(clause1, clause2)
-                        if not resolvents:
-                            return True
-                        new.update(resolvents)
+                    resolvents = MazeClause.resolve(clause1, clause2)
+                    if len(resolvents) == 0:
+                        return True
+                    new.update(resolvents)
 
             if any(clause in self.clauses for clause in new):
                 return False
