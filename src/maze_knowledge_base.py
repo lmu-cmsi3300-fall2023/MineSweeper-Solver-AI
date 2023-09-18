@@ -52,18 +52,23 @@ class MazeKnowledgeBase:
         # query procedure here!
         #query should be false
         self.clauses.add(query)
-        query = False
-        new = {}
-        while(self.__len__ != 0):
-            
-            for c1,c2 in self.clauses:
-                resolvents = {query.resolve(c1, c2)}
-                if resolvents.__len__ == 0:
-                    return True
-                new.add(resolvents)
-            if new in self.clauses:
+        new = set()
+
+        while self.clauses:
+            for clause in self.clauses:
+                for other_clause in self.clauses:
+                    if clause != other_clause:
+                        resolvents = MazeClause.resolve(clause, other_clause)
+                        if not resolvents:
+                            return True
+                        new.update(resolvents)
+
+            if any(clause in self.clauses for clause in new):
                 return False
-            self.clauses.add(new)
+
+            self.clauses.update(new)
+
+        return False
 
 
     def __len__ (self) -> int:
