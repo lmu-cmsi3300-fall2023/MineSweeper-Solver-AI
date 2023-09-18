@@ -50,7 +50,21 @@ class MazeKnowledgeBase:
         """
         # [!] TODO: Implement the proof-by-contradiction knowledgebase
         # query procedure here!
-        return False
+        #query should be false
+        self.clauses.add(query)
+        query = False
+        new = {}
+        while(self.__len__ != 0):
+            
+            for c1,c2 in self.clauses:
+                resolvents = {query.resolve(c1, c2)}
+                if resolvents.__len__ == 0:
+                    return True
+                new.add(resolvents)
+            if new in self.clauses:
+                return False
+            self.clauses.add(new)
+
 
     def __len__ (self) -> int:
         """
