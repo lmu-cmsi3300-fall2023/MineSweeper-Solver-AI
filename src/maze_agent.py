@@ -88,11 +88,15 @@ class MazeAgent:
 
         self.kb.simplify_self()
         currentType = perception[loc]
-
+        
+        #For every tile in perception, add to kb
+        #After, if tile is valid, add to playable
+        #Then, remove from perception
         for tile in perception:
             self.kb.tell(tile) 
             if self.kb.ask(tile):
                 playable.update(tile)
+            frontier.remove(tile)
 
         explored.update(loc)
         
