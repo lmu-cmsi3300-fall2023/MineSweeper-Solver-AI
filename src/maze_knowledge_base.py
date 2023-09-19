@@ -34,19 +34,12 @@ class MazeKnowledgeBase:
         """
         self.clauses.add(clause)
         
-    def negate(query: "MazeClause") -> "MazeClause":
+    @staticmethod    
+    def negate(query: "MazeClause") -> set["MazeClause"]:
         negated_clauses = set()
         for prop,truth_val in query.props.items():
             negated_clauses.add(MazeClause([(prop, not truth_val)]))
-            return negated_clauses
-            
-            
-        
-            
-        
-        # for prop in query.props:
-        #     query.props[prop] = not query.props[prop]
-        #TODO negating query
+        return negated_clauses
         
     def ask (self, query: "MazeClause") -> bool:
         """
@@ -65,7 +58,7 @@ class MazeKnowledgeBase:
         # [!] TODO: Implement the proof-by-contradiction knowledgebase
         # query procedure here!
         #combining query and KB
-        new = set() 
+        new: set[MazeClause] = set() 
             
         clauses = deepcopy(self.clauses)
         negated = MazeKnowledgeBase.negate(query)
