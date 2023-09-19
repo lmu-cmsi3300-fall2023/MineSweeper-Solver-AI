@@ -55,22 +55,36 @@ class MazeKnowledgeBase:
         # for prop in query.props:
         #     query.props[prop] = False
         #combining query and KB
-        self.clauses.add(query)
-        new = set()
+        
+            
+        clauses = self.clauses
+        negated = MazeClause.negate(query)
+        #add negated query
+        new = set() #dont need possibly
 
         while True:            
-            for clause1 in self.clauses:
-                for clause2 in self.clauses:
+            for clause1 in clauses:
+                for clause2 in clauses:
                     resolvents = MazeClause.resolve(clause1, clause2)
-                    if len(resolvents) == 0:
+                    if MazeClause([]) in resolvents:
                         return True
+                    new = new.union(resolvents)
+                    
+                    
 
-            if any(clause in self.clauses for clause in new):
+            if new.issubset(clauses):
                 return False
+            clauses = clauses.union(new)
+        return False
+            #solve for way to iterate threw loop again after false
+            
 
-            return False
-
-
+    def negate(query):
+        query.props.items()
+        pass
+        #TODO negating query
+        
+        
     def __len__ (self) -> int:
         """
         Returns the number of clauses currently stored in the KB
