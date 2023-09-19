@@ -34,6 +34,12 @@ class MazeKnowledgeBase:
         """
         self.clauses.add(clause)
         
+    def negate(query: "MazeClause") -> "MazeClause":
+        prop = query.props.items()
+        for prop in query.props:
+            query.props[prop] = False
+        #TODO negating query
+        
     def ask (self, query: "MazeClause") -> bool:
         """
         Given a MazeClause query, returns True if the KB entails the query, 
@@ -50,17 +56,13 @@ class MazeKnowledgeBase:
         """
         # [!] TODO: Implement the proof-by-contradiction knowledgebase
         # query procedure here!
-
-        #negating query
-        # for prop in query.props:
-        #     query.props[prop] = False
         #combining query and KB
-        
+        new = set() 
             
         clauses = self.clauses
-        negated = MazeClause.negate(query)
-        #add negated query
-        new = set() #dont need possibly
+        negated = MazeKnowledgeBase.negate(query)
+        clauses.add(negated)
+        #add negated query to KB
 
         while True:            
             for clause1 in clauses:
@@ -76,13 +78,9 @@ class MazeKnowledgeBase:
                 return False
             clauses = clauses.union(new)
         return False
-            #solve for way to iterate threw loop again after false
             
 
-    def negate(query):
-        query.props.items()
-        pass
-        #TODO negating query
+  
         
         
     def __len__ (self) -> int:
