@@ -167,24 +167,6 @@ class MazeClause:
     @staticmethod
     def resolve(c1: "MazeClause", c2: "MazeClause") -> set["MazeClause"]:
         result_clauses:set = set() 
-
-        for prop1 in c1.props:
-            for prop2 in c2.props:
-                new_clause = None  
-
-                if prop1 == prop2 and c1.props[prop1] != c2.props[prop2]:
-                    new_props = [(p, c1.props[p]) for p in c1.props if p != prop1]
-                    new_props += [(p, c2.props[p]) for p in c2.props if p != prop2]
-                    new_clause = MazeClause(new_props) 
-                    if new_clause.is_valid():
-                        return set()
-                    else:
-                        return {new_clause}
-
-        return set()
-    
-
-
         """
         Returns the set of non-valid MazeClauses that result from applying 
         resolution to the two input.
@@ -207,4 +189,18 @@ class MazeClause:
                   containing propositions OR is the empty clause in the case that
                   c1 and c2 yield a contradiction.
         """
+        for prop1 in c1.props:
+            for prop2 in c2.props:
+                new_clause = None  
+
+                if prop1 == prop2 and c1.props[prop1] != c2.props[prop2]:
+                    new_props = [(p, c1.props[p]) for p in c1.props if p != prop1]
+                    new_props += [(p, c2.props[p]) for p in c2.props if p != prop2]
+                    new_clause = MazeClause(new_props) 
+                    if new_clause.is_valid():
+                        return set()
+                    else:
+                        return {new_clause}
+
+        return set()
 

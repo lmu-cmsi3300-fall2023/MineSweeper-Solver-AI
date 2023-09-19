@@ -36,6 +36,18 @@ class MazeKnowledgeBase:
         
     @staticmethod    
     def negate(query: "MazeClause") -> set["MazeClause"]:
+        """
+        Given a MazeClause query, returns a set of MazeClauses
+        representing the negation of the query. 
+        
+        Parameters:
+            query (MazeClause):
+                The query clause to negate
+                
+        Returns:
+            set[MazeClause]:
+                A set of clauses representing the negation of the query
+        """
         negated_clauses = set()
         for prop,truth_val in query.props.items():
             negated_clauses.add(MazeClause([(prop, not truth_val)]))
@@ -72,17 +84,11 @@ class MazeKnowledgeBase:
                     if MazeClause([]) in resolvents:
                         return True
                     new = new.union(resolvents)
-                    
-                    
 
             if new.issubset(clauses):
                 return False
             clauses = clauses.union(new)
             
-
-  
-        
-        
     def __len__ (self) -> int:
         """
         Returns the number of clauses currently stored in the KB
