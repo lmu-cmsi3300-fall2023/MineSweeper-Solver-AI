@@ -82,6 +82,8 @@ class MazeAgent:
         frontier = self.env.get_frontier_locs()
         # [!] TODO! Agent is currently just making a random choice from the
         # frontier -- use logic and your own strategy to improve this!
+        self.env.get_player_loc()
+
         return random.choice(list(frontier))
         
     def is_safe_tile (self, loc: tuple[int, int]) -> Optional[bool]:
