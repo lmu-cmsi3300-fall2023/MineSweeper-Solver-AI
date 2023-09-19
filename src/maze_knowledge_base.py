@@ -35,9 +35,17 @@ class MazeKnowledgeBase:
         self.clauses.add(clause)
         
     def negate(query: "MazeClause") -> "MazeClause":
-        prop = query.props.items()
-        for prop in query.props:
-            query.props[prop] = False
+        negated_clauses = set()
+        for prop,truth_val in query.props.items():
+            negated_clauses.add(MazeClause([(prop, not truth_val)]))
+            return negated_clauses
+            
+            
+        
+            
+        
+        # for prop in query.props:
+        #     query.props[prop] = not query.props[prop]
         #TODO negating query
         
     def ask (self, query: "MazeClause") -> bool:
@@ -59,9 +67,9 @@ class MazeKnowledgeBase:
         #combining query and KB
         new = set() 
             
-        clauses = self.clauses
+        clauses = deepcopy(self.clauses)
         negated = MazeKnowledgeBase.negate(query)
-        clauses.add(negated)
+        clauses= clauses.union(negated)
         #add negated query to KB
 
         while True:            
@@ -77,7 +85,6 @@ class MazeKnowledgeBase:
             if new.issubset(clauses):
                 return False
             clauses = clauses.union(new)
-        return False
             
 
   
