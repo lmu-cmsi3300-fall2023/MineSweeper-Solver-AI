@@ -123,7 +123,14 @@ class MazeAgent:
         """
         # [!] TODO! Agent is currently dumb; this method should perform queries
         # on the agent's knowledge base from its gathered perceptions
-        return None
+        pit_location = self.kb.ask(MazeClause([((loc, "P"),True)]))
+        not_pit_location = self.kb.ask(MazeClause([((loc, "P"),False)]))
+        if pit_location: 
+            return False
+        if not_pit_location:
+            return True
+        else:   
+            return None
 
 # Declared here to avoid circular dependency
 from environment import Environment
