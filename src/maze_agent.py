@@ -86,17 +86,35 @@ class MazeAgent:
         explored = self.env.get_explored_locs()
         playable = self.env.get_playable_locs()
 
-        self.kb.simplify_self()
-        currentType = perception[loc]
+        #part 1
+        match self.is_safe_tile(loc):
+            case True:
+                self.safe_tiles.add(loc)
+            case False:
+                self.pit_tiles.add(loc)
+            case None:
+                if loc not in self.possible_pits:
+                    self.possible_pits.add(loc)
+
+                #finish sorting
+                self.possible_pits = sorted(self.possible_pits, key=lambda item: item[1])
+        
+        for location in self.env.get_cardinal_locs(loc,1):
+            #if all cardinal locations of loc warnings, then rule as possible pit
+            if location in self.safe_tiles or location in self.pit_tiles:
+                pass
+            else:
+                pass
+            pass
         
         #For every tile in perception, add to kb
         #After, if tile is valid, add to playable
-        #Then, remove from perception
+        #Then, remove from perception 
         for tile in perception:
             self.kb.tell(tile) 
             if self.kb.ask(tile):
                 playable.update(tile)
-            frontier.remove(tile)
+            #frontier.remove(tile)
 
         explored.update(loc)
         
@@ -123,11 +141,17 @@ class MazeAgent:
         """
         # [!] TODO! Agent is currently dumb; this method should perform queries
         # on the agent's knowledge base from its gathered perceptions
+        if loc in self.safe_tiles:
+            return True
+        elif loc in self.pit_tiles:
+            return False
+        
         pit_location = self.kb.ask(MazeClause([((loc, "P"),True)]))
         not_pit_location = self.kb.ask(MazeClause([((loc, "P"),False)]))
+
         if pit_location: 
             return False
-        if not_pit_location:
+        elif not_pit_location:
             return True
         else:   
             return None
