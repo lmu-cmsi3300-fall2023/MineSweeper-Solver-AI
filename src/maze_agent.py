@@ -86,39 +86,36 @@ class MazeAgent:
         explored = self.env.get_explored_locs()
         playable = self.env.get_playable_locs()
 
+
         #part 1
-        match self.is_safe_tile(loc):
-            case True:
-                self.safe_tiles.add(loc)
-            case False:
-                self.pit_tiles.add(loc)
-            case None:
-                if loc not in self.possible_pits:
-                    self.possible_pits.add(loc)
-
-                #finish sorting
-                self.possible_pits = sorted(self.possible_pits, key=lambda item: item[1])
-        
-        for location in self.env.get_cardinal_locs(loc,1):
-            #if all cardinal locations of loc warnings, then rule as possible pit
-            if location in self.safe_tiles or location in self.pit_tiles:
-                pass
-            else:
-                pass
-            pass
-        
-        #For every tile in perception, add to kb
-        #After, if tile is valid, add to playable
-        #Then, remove from perception 
-        for tile in perception:
-            self.kb.tell(tile) 
-            if self.kb.ask(tile):
-                playable.update(tile)
-            #frontier.remove(tile)
-
+        frontier.remove(loc)
+        self.safe_tiles.update(loc)
         explored.update(loc)
+        #tileType = perception[tile]
         
-        return random.choice(list(playable))
+        #part 2
+        #add truth of current tile being safe, then simplify
+        #self.kb.tell(loc)
+        #self.kb.simplify_from_known_locs(self.kb.clauses, self.safe_tiles, self.pit_tiles)
+        # if tileType != ".":
+        #     for card in self.env.get_cardinal_locs(loc, 1):
+        #         self.possible_pits.add(card)
+        
+        #part 3
+        #Check if any possible pits are now definitely safe or not
+        for loc in self.possible_pits:
+            if not self.is_safe_tile(loc):
+                self.possible_pits.remove(loc)
+                self.pit_tiles.update(loc)
+
+        #finish sorting
+        #Priority for sorting: 
+        #1.Number of warning tiles
+        #2.Distance from goal
+        self.possible_pits = sorted(self.possible_pits, key=lambda item: item[1])
+
+        
+        return random.choice(list(frontier))
         
     def is_safe_tile (self, loc: tuple[int, int]) -> Optional[bool]:
         """
