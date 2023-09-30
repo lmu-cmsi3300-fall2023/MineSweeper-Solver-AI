@@ -47,6 +47,7 @@ class MazeAgent:
         
         # [!] TODO: Initialize any other knowledge-related attributes for
         # agent here, or any other record-keeping attributes you'd like
+        self.moveOrder: dict[tuple[int, int], str] = dict()
         
         
     ##################################################################
@@ -90,17 +91,20 @@ class MazeAgent:
         #part 1
         self.safe_tiles.update(loc)
         tileType = perception["tile"]
+        if len(self.safe_tiles) == 1:
+            for tile in self.env.get_cardinal_locs(loc, 1):
+                self.safe_tiles.update(tile)
         
         #part 2
         #add truth of current tile being safe, then simplify
-        # clause = MazeClause(loc)
+        # clause = MazeClause(dict[("P", loc), True])
         # self.kb.tell(clause)
         #self.kb.simplify_from_known_locs(self.kb.clauses, self.safe_tiles, self.pit_tiles)
         if tileType != ".":
             props = set()
             for card in self.env.get_cardinal_locs(loc, 1):
                 if card not in (self.possible_pits or explored):
-                    self.possible_pits.append(card)
+                    self.possible_pits.add(card)
                     props.add(card)
             for p in props:
                 prop = (("P", p), True)
@@ -112,18 +116,24 @@ class MazeAgent:
         
         #part 3
         #Check if any possible pits are now definitely safe or not
-        for loc in self.possible_pits:
-            if not self.is_safe_tile(loc):
-                self.possible_pits.remove(loc)
-                self.pit_tiles.update(loc)
+        # for loc in self.possible_pits:
+        #     if not self.is_safe_tile(loc):
+        #         self.possible_pits.remove(loc)
+        #         self.pit_tiles.update(loc)
+        #     elif self.is_safe_tile(loc):
+        #         self.possible_pits.remove(loc)
+        #         self.safe_tiles.update(loc)
 
-        #finish sorting
         #Priority for sorting: 
         #1.Number of warning tiles
         #2.Distance from goal
-        self.possible_pits = sorted(self.possible_pits, key=lambda item: item[1])
-
+        # for tile in frontier:
+        #     self.moveOrder.update(tile)
+        #     self.moveOrder[tile] = perception["tile"]
         
+        # sortedMoveOrder = set(sorted(self.moveOrder))
+
+        # return min(sortedMoveOrder)
         return random.choice(list(frontier))
         
     def is_safe_tile (self, loc: tuple[int, int]) -> Optional[bool]:
