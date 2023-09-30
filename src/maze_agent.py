@@ -84,22 +84,31 @@ class MazeAgent:
         # frontier -- use logic and your own strategy to improve this!
         loc = self.env.get_player_loc()
         explored = self.env.get_explored_locs()
-        playable = self.env.get_playable_locs()
+        #playable = self.env.get_playable_locs()
 
 
         #part 1
-        frontier.remove(loc)
         self.safe_tiles.update(loc)
-        explored.update(loc)
-        #tileType = perception[tile]
+        tileType = perception["tile"]
         
         #part 2
         #add truth of current tile being safe, then simplify
-        #self.kb.tell(loc)
+        # clause = MazeClause(loc)
+        # self.kb.tell(clause)
         #self.kb.simplify_from_known_locs(self.kb.clauses, self.safe_tiles, self.pit_tiles)
-        # if tileType != ".":
-        #     for card in self.env.get_cardinal_locs(loc, 1):
-        #         self.possible_pits.add(card)
+        if tileType != ".":
+            props = set()
+            for card in self.env.get_cardinal_locs(loc, 1):
+                if card not in (self.possible_pits or explored):
+                    self.possible_pits.append(card)
+                    props.add(card)
+            for p in props:
+                prop = (("P", p), True)
+                counterProp = (("P", p), False)
+                
+                newClause = MazeClause(dict([prop, counterProp]))
+                self.kb.tell(newClause)
+
         
         #part 3
         #Check if any possible pits are now definitely safe or not
