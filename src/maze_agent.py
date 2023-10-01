@@ -47,7 +47,7 @@ class MazeAgent:
         
         # [!] TODO: Initialize any other knowledge-related attributes for
         # agent here, or any other record-keeping attributes you'd like
-        self.moveOrder: dict[tuple[int, int], str] = dict()
+        self.moveOrder: list[tuple[int, int]] = list()
         
         
     ##################################################################
@@ -85,8 +85,6 @@ class MazeAgent:
         # frontier -- use logic and your own strategy to improve this!
         loc = self.env.get_player_loc()
         explored = self.env.get_explored_locs()
-        #playable = self.env.get_playable_locs()
-
 
         #part 1
         self.safe_tiles.update(loc)
@@ -99,42 +97,48 @@ class MazeAgent:
         #add truth of current tile being safe, then simplify
         # clause = MazeClause(dict[("P", loc), True])
         # self.kb.tell(clause)
-        #self.kb.simplify_from_known_locs(self.kb.clauses, self.safe_tiles, self.pit_tiles)
+        self.kb.simplify_from_known_locs(self.kb.clauses, self.safe_tiles, self.pit_tiles)
         if tileType != ".":
             props = set()
             for card in self.env.get_cardinal_locs(loc, 1):
                 if card not in (self.possible_pits or explored):
                     self.possible_pits.add(card)
                     props.add(card)
-            for p in props:
-                prop = (("P", p), True)
-                counterProp = (("P", p), False)
+            # for p in props:
+            #     prop = (("P", p), False)
+            #     counterProp = (("P", p), True)
                 
-                newClause = MazeClause(dict([prop, counterProp]))
-                self.kb.tell(newClause)
+            #     newClause = MazeClause(dict([prop, counterProp]))
+            #     self.kb.tell(newClause)
 
         
         #part 3
         #Check if any possible pits are now definitely safe or not
-        # for loc in self.possible_pits:
-        #     if not self.is_safe_tile(loc):
-        #         self.possible_pits.remove(loc)
-        #         self.pit_tiles.update(loc)
-        #     elif self.is_safe_tile(loc):
-        #         self.possible_pits.remove(loc)
-        #         self.safe_tiles.update(loc)
+        copySet: set[tuple[int, int]] = set()
+
+        for l in self.possible_pits:
+            confirmed = False
+            if not self.is_safe_tile(l):
+                self.pit_tiles.update(l)
+            elif self.is_safe_tile(l):
+                self.safe_tiles.update(l)
+            if not confirmed:
+                copySet.update(l)
+        
+        self.possible_pits = copySet
+        
 
         #Priority for sorting: 
         #1.Number of warning tiles
         #2.Distance from goal
-        # for tile in frontier:
-        #     self.moveOrder.update(tile)
-        #     self.moveOrder[tile] = perception["tile"]
-        
-        # sortedMoveOrder = set(sorted(self.moveOrder))
+        #3.Tile included in most number of props?
 
-        # return min(sortedMoveOrder)
-        return random.choice(list(frontier))
+        for tile in frontier:
+            if tile not in self.pit_tiles:
+                self.moveOrder.append(tile)   
+
+        return self.moveOrder[0]
+        #return random.choice(list(frontier))
         
     def is_safe_tile (self, loc: tuple[int, int]) -> Optional[bool]:
         """
