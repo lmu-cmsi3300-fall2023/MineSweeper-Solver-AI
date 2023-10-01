@@ -87,11 +87,11 @@ class MazeAgent:
         explored = self.env.get_explored_locs()
 
         #part 1
-        self.safe_tiles.update(loc)
+        self.safe_tiles.add(loc)
         tileType = perception["tile"]
         if len(self.safe_tiles) == 1:
             for tile in self.env.get_cardinal_locs(loc, 1):
-                self.safe_tiles.update(tile)
+                self.safe_tiles.add(tile)
         
         #part 2
         #add truth of current tile being safe, then simplify
@@ -119,14 +119,15 @@ class MazeAgent:
         for l in self.possible_pits:
             confirmed = False
             if not self.is_safe_tile(l):
-                self.pit_tiles.update(l)
+                self.pit_tiles.add(l)
+                confirmed = True
             elif self.is_safe_tile(l):
-                self.safe_tiles.update(l)
+                self.safe_tiles.add(l)
+                confirmed = True
             if not confirmed:
-                copySet.update(l)
+                copySet.add(l)
         
-        self.possible_pits = copySet
-        
+        self.possible_pits = copySet      
 
         #Priority for sorting: 
         #1.Number of warning tiles
@@ -161,6 +162,15 @@ class MazeAgent:
         """
         # [!] TODO! Agent is currently dumb; this method should perform queries
         # on the agent's knowledge base from its gathered perceptions
+        if self.env.get_goal_loc() not in self.safe_tiles:
+            self.safe_tiles.add(self.env.get_goal_loc())
+
+        if len(self.env._explored) == 1:
+            self.safe_tiles.add(loc)
+            self.kb.tell((("P", loc), True))
+            for tile in self.env.get_cardinal_locs(loc, 1):
+                self.safe_tiles.add(tile)
+
         if loc in self.safe_tiles:
             return True
         elif loc in self.pit_tiles:
