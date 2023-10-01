@@ -170,7 +170,7 @@ class MazeAgent:
             self.kb.tell(MazeClause([(("P", self.goal),False)]))
             self.safe_tiles.add(self.goal)
         
-        if self.env.get_player_loc() not in self.safe_tiles and self.perception["tile"] == ".":
+        if self.env.get_player_loc() not in self.safe_tiles and self.perception[(loc)] == ".":
             self.kb.tell(MazeClause([(("P", self.env.get_player_loc()),False)]))
             self.safe_tiles.add(self.env.get_player_loc())
             for tile in self.env.get_cardinal_locs(loc, 1):
