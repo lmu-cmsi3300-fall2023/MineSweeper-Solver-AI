@@ -49,6 +49,7 @@ class MazeAgent:
         # agent here, or any other record-keeping attributes you'd like
         self.moveOrder: list[tuple[int, int]] = list()
         self.startLoc = self.env._initial_loc
+        self.perception: perception
         
         
     ##################################################################
@@ -165,19 +166,18 @@ class MazeAgent:
         """
         # [!] TODO! Agent is currently dumb; this method should perform queries
         # on the agent's knowledge base from its gathered perceptions
-        if self.env.get_goal_loc() not in self.safe_tiles:
-            self.kb.tell(MazeClause([(("P", self.env.get_goal_loc()),False)]))
-            self.safe_tiles.add(self.env.get_goal_loc())
+        if self.goal not in self.safe_tiles:
+            self.kb.tell(MazeClause([(("P", self.goal),False)]))
+            self.safe_tiles.add(self.goal)
         
-        if self.env.get_player_loc() not in self.safe_tiles:
+        if self.env.get_player_loc() not in self.safe_tiles and self.perception["tile"] == ".":
             self.kb.tell(MazeClause([(("P", self.env.get_player_loc()),False)]))
             self.safe_tiles.add(self.env.get_player_loc())
             for tile in self.env.get_cardinal_locs(loc, 1):
                 self.safe_tiles.add(tile)
                 self.kb.tell(MazeClause([(("P", loc),False)]))       
 
-        # if loc not in self.safe_tiles or loc not in self.pit_tiles:
-        #     return None
+        
 
         if loc in self.safe_tiles:
             return True
@@ -189,10 +189,10 @@ class MazeAgent:
 
         if pit_location:
             self.kb.tell(MazeClause([(("P", loc),True)]))
-            return True
+            return False
         elif not_pit_location:
             self.kb.tell(MazeClause([(("P", loc),False)]))
-            return False
+            return True
         else:   
             return None
 
