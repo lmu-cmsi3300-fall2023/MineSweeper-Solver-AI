@@ -119,9 +119,11 @@ class MazeAgent:
         for l in self.possible_pits:
             confirmed = False
             if not self.is_safe_tile(l):
+                self.kb.tell(MazeClause([(("P", loc),False)]))
                 self.pit_tiles.add(l)
                 confirmed = True
             elif self.is_safe_tile(l):
+                self.kb.tell(MazeClause([(("P", loc),True)]))
                 self.safe_tiles.add(l)
                 confirmed = True
             if not confirmed:
@@ -165,23 +167,26 @@ class MazeAgent:
         if self.env.get_goal_loc() not in self.safe_tiles:
             self.safe_tiles.add(self.env.get_goal_loc())
 
-        if len(self.env._explored) == 1:
+        if len(self.kb.clauses) == 0:
             self.safe_tiles.add(loc)
-            self.kb.tell((("P", loc), True))
+            self.kb.tell(MazeClause([(("P", loc),True)]))
             for tile in self.env.get_cardinal_locs(loc, 1):
                 self.safe_tiles.add(tile)
+                self.kb.tell(MazeClause([(("P", loc),True)]))
 
         if loc in self.safe_tiles:
             return True
         elif loc in self.pit_tiles:
             return False
         
-        pit_location = self.kb.ask(MazeClause([((loc, "P"),True)]))
-        not_pit_location = self.kb.ask(MazeClause([((loc, "P"),False)]))
+        pit_location = self.kb.ask(MazeClause([(("P", loc),True)]))
+        not_pit_location = self.kb.ask(MazeClause([(("P", loc),False)]))
 
-        if pit_location: 
+        if pit_location:
+            self.kb.tell(MazeClause([(("P", loc),False)]))
             return False
         elif not_pit_location:
+            self.kb.tell(MazeClause([(("P", loc),True)]))
             return True
         else:   
             return None
