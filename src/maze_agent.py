@@ -49,7 +49,7 @@ class MazeAgent:
         # agent here, or any other record-keeping attributes you'd like
         self.moveOrder: list[tuple[int, int]] = list()
         self.startLoc = self.env._initial_loc
-        self.perception: perception
+        self.perception: dict[tuple[int,int], str] = perception
         
         
     ##################################################################
@@ -175,14 +175,12 @@ class MazeAgent:
             self.safe_tiles.add(self.env.get_player_loc())
             for tile in self.env.get_cardinal_locs(loc, 1):
                 self.safe_tiles.add(tile)
-                self.kb.tell(MazeClause([(("P", loc),False)]))       
-
-        
+                self.kb.tell(MazeClause([(("P", loc),False)])) 
 
         if loc in self.safe_tiles:
             return True
         elif loc in self.pit_tiles:
-            return False
+            return False 
         
         pit_location = self.kb.ask(MazeClause([(("P", loc),True)]))
         not_pit_location = self.kb.ask(MazeClause([(("P", loc),False)]))
