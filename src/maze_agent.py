@@ -87,10 +87,18 @@ class MazeAgent:
         explored = self.env.get_explored_locs()
 
         #part 1
-        self.safe_tiles.add(loc)
         tileType = perception["tile"]
-        if len(self.safe_tiles) == 1:
+        if self.goal not in self.safe_tiles:
+            self.kb.tell(MazeClause([(("P", self.goal),False)]))
+            self.safe_tiles.add(self.goal)
+        
+        if self.startLoc not in self.safe_tiles:
+
+            self.kb.tell(MazeClause([(("P", self.startLoc),False)]))
+
+            self.safe_tiles.add(self.env.get_player_loc())
             for tile in self.env.get_cardinal_locs(loc, 1):
+                self.kb.tell(MazeClause([(("P", tile),False)]))
                 self.safe_tiles.add(tile)
         
         #part 2
@@ -164,14 +172,6 @@ class MazeAgent:
         """
         # [!] TODO! Agent is currently dumb; this method should perform queries
         # on the agent's knowledge base from its gathered perceptions
-        if self.goal not in self.safe_tiles:
-            self.safe_tiles.add(self.goal)
-        
-        if self.env.get_player_loc() not in self.safe_tiles:
-            self.safe_tiles.add(self.env.get_player_loc())
-            for tile in self.env.get_cardinal_locs(loc, 1):
-                self.safe_tiles.add(tile)
-
         if loc in self.safe_tiles:
             return True
         elif loc in self.pit_tiles:
