@@ -87,6 +87,8 @@ class MazeAgent:
         explored = self.env.get_explored_locs()
 
         #part 1
+        #Check if goal, start, and cardinals are in safetiles. 
+        #if not, add them to safetiles and update kb to reflect
         tileType = perception["tile"]
         if self.goal not in self.safe_tiles:
             self.kb.tell(MazeClause([(("P", self.goal),False)]))
@@ -100,11 +102,11 @@ class MazeAgent:
                 self.safe_tiles.add(tile)
         
         #part 2
-        #add truth of current tile, then simplify
+        #add truth of current tile
         pit = False if tileType == "P" else True
         self.kb.tell(MazeClause([(("P", tileType),pit)]))
-        self.kb.simplify_from_known_locs(self.kb.clauses, self.safe_tiles, self.pit_tiles)
 
+        #if not a safetile, then add all possible permutations to kb
         if tileType != ".":
             props = set()
             propCopy = props.copy()
@@ -124,6 +126,8 @@ class MazeAgent:
                     self.kb.tell(MazeClause([(("P", c),True), (("P", counterProp), False)]))
                     self.kb.tell(MazeClause([(("P", c),False), (("P", prop), True)]))       
         
+        self.kb.simplify_from_known_locs(self.kb.clauses, self.safe_tiles, self.pit_tiles)
+
         #part 3
         #Check if any possible pits are now definitely safe or not
         self.scanKB(loc)
@@ -133,16 +137,22 @@ class MazeAgent:
         #2.Distance from goal
         #3.Tile included in most number of props?
 
-        for tile in frontier:
+        frontierList: list(tuple[int,int]) = list()
+        for f in frontier:
+            frontierList.append(f)
+
+        for tile in frontierList:
             if tile not in self.pit_tiles :
                 #Manhattan Distance for priority
-                # mDist = abs(frontier[tile][0] - self.goal[0]) + abs(frontier[tile][1] - self.goal[1])
-                self.moveOrder.append((tile, 1))   
+                mDist = abs(tile[0] - self.goal[0]) + abs(tile[1] - self.goal[1])
+                self.moveOrder.append((tile, mDist)) 
 
-        return self.moveOrder[0]
-        #return random.choice(list(frontier))
+        sortedMoveOrder = sorted(self.moveOrder, key=lambda x: x[1])
+
+        return sortedMoveOrder[0][0]
+        # return random.choice(list(frontier))
         
-    def is_safe_tile (self, loc: tuple[int, int]) -> Optional[bool]:
+    def is_safe_tile (self, loc: tuple[int, int ]) -> Optional[bool]:
         """
         Determines whether or not the given maze location can be concluded as
         safe (i.e., not containing a pit), following the steps:
@@ -179,6 +189,17 @@ class MazeAgent:
             return None
         
     def scanKB (self, loc: tuple[int, int]) -> None:
+        """
+        Determines whether any new information passed into KB
+        entails that any tile is now definitely safe, a pit,
+        or neither
+
+        Returns:
+            None:
+                Simply updating the kb and the number of 
+                possible pits, nothing else
+        """
+
         copySet: set[tuple[int, int]] = set()
 
         for l in self.possible_pits:
