@@ -47,7 +47,7 @@ class MazeAgent:
         
         # [!] TODO: Initialize any other knowledge-related attributes for
         # agent here, or any other record-keeping attributes you'd like
-        self.moveOrder: list[tuple[int, int]] = list()
+        self.moveOrder: list[tuple[tuple[int, int], int]] = list()
         self.startLoc = self.env._initial_loc        
         
     ##################################################################
@@ -93,51 +93,40 @@ class MazeAgent:
             self.safe_tiles.add(self.goal)
         
         if self.startLoc not in self.safe_tiles:
-
             self.kb.tell(MazeClause([(("P", self.startLoc),False)]))
-
             self.safe_tiles.add(self.env.get_player_loc())
             for tile in self.env.get_cardinal_locs(loc, 1):
                 self.kb.tell(MazeClause([(("P", tile),False)]))
                 self.safe_tiles.add(tile)
         
         #part 2
-        #add truth of current tile being safe, then simplify
-        # clause = MazeClause(dict[("P", loc), True])
-        # self.kb.tell(clause)
+        #add truth of current tile, then simplify
+        pit = False if tileType == "P" else True
+        self.kb.tell(MazeClause([(("P", tileType),pit)]))
         self.kb.simplify_from_known_locs(self.kb.clauses, self.safe_tiles, self.pit_tiles)
+
         if tileType != ".":
             props = set()
+            propCopy = props.copy()
             for card in self.env.get_cardinal_locs(loc, 1):
                 if card not in (self.possible_pits or explored):
                     self.possible_pits.add(card)
                     props.add(card)
-            # for p in props:
-            #     prop = (("P", p), False)
-            #     counterProp = (("P", p), True)
-                
-            #     newClause = MazeClause(dict([prop, counterProp]))
-            #     self.kb.tell(newClause)
+            
+            for p in props:
+                prop = (("P", p), False)
+                counterProp = (("P", p), True)
 
+                for c in propCopy:
+                    cProp = (("P", c), True)
+                    ccProp = (("P", c), False)
+
+                    self.kb.tell(MazeClause([(("P", c),True), (("P", counterProp), False)]))
+                    self.kb.tell(MazeClause([(("P", c),False), (("P", prop), True)]))       
         
         #part 3
         #Check if any possible pits are now definitely safe or not
-        copySet: set[tuple[int, int]] = set()
-
-        for l in self.possible_pits:
-            confirmed = False
-            if not self.is_safe_tile(l):
-                self.kb.tell(MazeClause([(("P", loc),False)]))
-                self.pit_tiles.add(l)
-                confirmed = True
-            elif self.is_safe_tile(l):
-                self.kb.tell(MazeClause([(("P", loc),True)]))
-                self.safe_tiles.add(l)
-                confirmed = True
-            if not confirmed:
-                copySet.add(l)
-        
-        self.possible_pits = copySet      
+        self.scanKB(loc)
 
         #Priority for sorting: 
         #1.Number of warning tiles
@@ -145,8 +134,10 @@ class MazeAgent:
         #3.Tile included in most number of props?
 
         for tile in frontier:
-            if tile not in self.pit_tiles:
-                self.moveOrder.append(tile)   
+            if tile not in self.pit_tiles :
+                #Manhattan Distance for priority
+                # mDist = abs(frontier[tile][0] - self.goal[0]) + abs(frontier[tile][1] - self.goal[1])
+                self.moveOrder.append((tile, 1))   
 
         return self.moveOrder[0]
         #return random.choice(list(frontier))
@@ -186,6 +177,24 @@ class MazeAgent:
             return True
         else:   
             return None
+        
+    def scanKB (self, loc: tuple[int, int]) -> None:
+        copySet: set[tuple[int, int]] = set()
+
+        for l in self.possible_pits:
+            confirmed = False
+            if not self.is_safe_tile(l):
+                self.kb.tell(MazeClause([(("P", loc),False)]))
+                self.pit_tiles.add(l)
+                confirmed = True
+            elif self.is_safe_tile(l):
+                self.kb.tell(MazeClause([(("P", loc),True)]))
+                self.safe_tiles.add(l)
+                confirmed = True
+            elif not confirmed:
+                copySet.add(l)
+        
+        self.possible_pits = copySet 
 
 # Declared here to avoid circular dependency
 from environment import Environment
