@@ -45,6 +45,7 @@ class MazeAgent:
         self.possible_pits: set[tuple[int, int]] = set()
         self.safe_tiles: set[tuple[int, int]] = set()
         self.pit_tiles: set[tuple[int, int]] = set()
+        initial_loc: tuple[int, int] = env.get_player_loc()
         
         # [!] TODO: Initialize any other knowledge-related attributes for
         # agent here, or any other record-keeping attributes you'd like
@@ -53,15 +54,17 @@ class MazeAgent:
         
         #add goal to safetiles
         self.kb.tell(MazeClause([((Constants.PIT_BLOCK, self.goal),False)]))
+        self.safe_tiles.add(self.goal)
         
         #add initial location to safetiles
         self.kb.tell(MazeClause([((Constants.PIT_BLOCK, self.env._initial_loc),False)]))
+        self.safe_tiles.add(self.env._initial_loc)
         
         #goal can not have 4 pits around it
         self.kb.tell(MazeClause([((Constants.WRN_FOUR_BLOCK, self.goal),False)]))
     
         #add cardinals to safetiles
-        # self.kb.tell(MazeClause([((Constants.PIT_BLOCK, self.env.get_cardinal_locs(self.env._initial_loc,1)),False)]))
+        # self.kb.tell(MazeClause([((Constants.PIT_BLOCK, self.env.get_cardinal_locs(initial_loc,1)),False)]))
         
         #Use this to keep track of the agent's current location
         self.think(perception)      
@@ -120,17 +123,18 @@ class MazeAgent:
         #props is the set of cardinal locations which aren't
         #in possible pits, safe tiles, pit tiles, or explored
 
-
         #!should change to a list
             props = set()
             cardinals = list()
-
             for card in self.env.get_cardinal_locs(loc, 1):
                 if card not in explored:
                     cardinals.append(card)
                     if card not in (self.possible_pits or self.pit_tiles or self.safe_tiles):
                         self.possible_pits.add(card)
                         props.add(card)
+                
+                pit_locations = self.env.get_cardinal_locs(loc, 1) - self.safe_tiles        
+                
                 perms = combinations(cardinals, 2)
                 cardSet = set(cardinals)
 
@@ -141,17 +145,14 @@ class MazeAgent:
                     case 2:
                         for p in perms:                      
                             self.kb.tell(MazeClause([(("P", p[0]),False), (("P", p[1]),False)]))
-                        ans = list()
-                        for c in cardSet:
-                            ans.append((("P", p),True))
-                        self.kb.tell(MazeClause(ans))
+                       
+                        self.kb.tell(MazeClause([(("P", prop),True) for prop in pit_locations]))
+                       
                     case 1:
-                        for p in perms:
+                        for p in perms:                      
                             self.kb.tell(MazeClause([(("P", p[0]),True), (("P", p[1]),True)]))
-                        ans = list()
-                        for c in cardSet:
-                            ans.append((("P", c),False))
-                        self.kb.tell(MazeClause(ans))
+                       
+                        self.kb.tell(MazeClause([(("P", prop),False) for prop in pit_locations]))
             
         self.kb.simplify_from_known_locs(self.kb.clauses, self.safe_tiles, self.pit_tiles)
 
@@ -190,8 +191,8 @@ class MazeAgent:
 
         # Sort based on priority and Manhattan Distance
         sortedMoveOrder = sorted(self.moveOrder, key=lambda x: (x[1], -priority))
-
         return sortedMoveOrder[0][0]
+        
 
         # return random.choice(list(frontier))
         
