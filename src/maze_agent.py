@@ -62,10 +62,13 @@ class MazeAgent:
         
         #goal can not have 4 pits around it
         self.kb.tell(MazeClause([((Constants.WRN_FOUR_BLOCK, self.goal),False)]))
+        # for tile in self.env.get_cardinal_locs()
     
         #add cardinals to safetiles
-        # self.kb.tell(MazeClause([((Constants.PIT_BLOCK, self.env.get_cardinal_locs(initial_loc,1)),False)]))
-        
+        for tile in self.env.get_cardinal_locs(self.env._initial_loc, 1):
+            self.kb.tell(MazeClause([(("P", tile),False)]))
+            self.safe_tiles.add(tile)
+
         #Use this to keep track of the agent's current location
         self.think(perception)      
         
@@ -103,56 +106,62 @@ class MazeAgent:
         # [!] TODO! Agent is currently just making a random choice from the
         # frontier -- use logic and your own strategy to improve this!
         loc = self.env.get_player_loc()
-        explored = self.env.get_explored_locs()
-
+        
         #part 1
         #Check if goal, start, and cardinals are in safetiles. 
         #if not, add them to safetiles and update kb to reflect
         tileType = perception["tile"]
-        
-        for tile in self.env.get_cardinal_locs(loc, 1):
-            self.kb.tell(MazeClause([(("P", tile),False)]))
-            self.safe_tiles.add(tile)
         
         #part 2
         #add truth of current tile
         pit = False if tileType == "P" else True
         self.kb.tell(MazeClause([(("P", tileType),pit)]))
 
-        if tileType != ".":
-        #props is the set of cardinal locations which aren't
-        #in possible pits, safe tiles, pit tiles, or explored
+        pit_locations = self.env.get_cardinal_locs(loc, 1) - self.safe_tiles
+        comb = combinations(pit_locations, 2)
+        
 
-        #!should change to a list
-            props = set()
-            cardinals = list()
-            for card in self.env.get_cardinal_locs(loc, 1):
-                if card not in explored:
-                    cardinals.append(card)
-                    if card not in (self.possible_pits or self.pit_tiles or self.safe_tiles):
-                        self.possible_pits.add(card)
-                        props.add(card)
-                
-                pit_locations = self.env.get_cardinal_locs(loc, 1) - self.safe_tiles        
-                
-                perms = combinations(cardinals, 2)
-                cardSet = set(cardinals)
+        match tileType:
 
-                match len(props):
-                    case 3:
-                        for c in cardSet:
-                            self.kb.tell(MazeClause([(("P", c),False)]))
-                    case 2:
-                        for p in perms:                      
-                            self.kb.tell(MazeClause([(("P", p[0]),False), (("P", p[1]),False)]))
-                       
-                        self.kb.tell(MazeClause([(("P", prop),True) for prop in pit_locations]))
-                       
-                    case 1:
-                        for p in perms:                      
-                            self.kb.tell(MazeClause([(("P", p[0]),True), (("P", p[1]),True)]))
-                       
-                        self.kb.tell(MazeClause([(("P", prop),False) for prop in pit_locations]))
+            case ".":
+                self.kb.tell(MazeClause([(("P", loc),False)]))
+                self.safe_tiles.add(loc)
+
+                for cardinal in self.env.get_cardinal_locs(loc,1):
+                    self.kb.tell(MazeClause([(("P", cardinal),False)]))
+                    self.safe_tiles.add(cardinal)
+            case "4":
+                self.safe_tiles.add(loc)
+                self.kb.tell(MazeClause([(("P", loc),False)]))
+
+                for cardinal in self.env.get_cardinal_locs(loc,1):
+                    self.kb.tell(MazeClause([(("P", cardinal),True)]))
+            case "3":
+                self.safe_tiles.add(loc)
+                self.kb.tell(MazeClause([(("P", loc),False)]))
+
+                for l in pit_locations:
+                    self.kb.tell(MazeClause([(("P", l), True)]))
+            case "2":
+                self.safe_tiles.add(loc)
+                self.kb.tell(MazeClause([(("P", loc),False)]))
+
+                for prop in comb:
+                    self.kb.tell(MazeClause([
+                        (("P", prop[0]),True),
+                        (("P", prop[1]),True)]))
+                
+                self.kb.tell(MazeClause([(("P", l),False) for l in pit_locations]))
+            case "1":
+                self.safe_tiles.add(loc)
+                self.kb.tell(MazeClause([(("P", loc),False)]))
+
+                for prop in comb:
+                    self.kb.tell(MazeClause([
+                        (("P", prop[0]),False),
+                        (("P", prop[1]),False)]))
+                
+                self.kb.tell(MazeClause([(("P", l),True) for l in pit_locations]))
             
         self.kb.simplify_from_known_locs(self.kb.clauses, self.safe_tiles, self.pit_tiles)
 
