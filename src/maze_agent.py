@@ -113,23 +113,31 @@ class MazeAgent:
 
             #!should change to a list
             props = set()
+            cardinals = list()
 
-            propCopy = props.copy()
             for card in self.env.get_cardinal_locs(loc, 1):
+                cardinals.add(card)
                 if card not in (self.possible_pits or explored or self.pit_tiles or self.safe_tiles):
                     self.possible_pits.add(card)
                     props.add(card)
+            safe = set()
+            danger = set()
+            for c in cardinals:
+                safe.add([("P", c),False])
+                danger.add([("P", c),True])
+    
+            match len(props):
+                case 3:
+                    for c in cardinals:
+                        self.kb.tell(MazeClause([(("P", c),False)]))
+                case 2:
+                    self.kb.tell(MazeClause([(("P", c),False),(("P", c),False)]))
+                    self.kb.tell(MazeClause([(("P", c[0]),True),(("P", c[1]),True),(("P", c[2]),True)]))
+                case 1:
+                    for c in cardinals:
+                        self.kb.tell(MazeClause([(("P", c),True),(("P", c),True)]))
+                    self.kb.tell(MazeClause([(("P", c),False),(("P", c),False),(("P", c),False)]))
 
-            for p in props:
-                if len(props) == 3:
-                    self.kb.tell(MazeClause([(("P", p),True)]))
-                elif len(props) == 2:
-                    prop = (("P", p), False)
-                    counterProp = (("P", p), True)
-                elif len(props) == 1:
-                    for c in propCopy:
-                        self.kb.tell(MazeClause([(("P", c),True), (("P", counterProp), False)]))
-                        self.kb.tell(MazeClause([(("P", c),False), (("P", prop), True)]))       
             
         self.kb.simplify_from_known_locs(self.kb.clauses, self.safe_tiles, self.pit_tiles)
 
