@@ -62,7 +62,7 @@ class MazeAgent:
         
         #goal can not have 4 pits around it
         self.kb.tell(MazeClause([((Constants.WRN_FOUR_BLOCK, self.goal),False)]))
-        # for tile in self.env.get_cardinal_locs()
+        self.kb.tell(MazeClause([(("P", tile), False) for tile in self.env.get_cardinal_locs(self.goal, 1)]))
     
         #add cardinals to safetiles
         for tile in self.env.get_cardinal_locs(self.env._initial_loc, 1):
