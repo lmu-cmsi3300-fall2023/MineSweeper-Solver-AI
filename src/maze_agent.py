@@ -108,24 +108,29 @@ class MazeAgent:
 
         #if not a safetile, then add all possible permutations to kb
         if tileType != ".":
+            #props is the set of cardinal locations which aren't 
+            #in possible pits, safe tiles, pit tiles, or explored
+
+            #!should change to a list
             props = set()
+
             propCopy = props.copy()
             for card in self.env.get_cardinal_locs(loc, 1):
-                if card not in (self.possible_pits or explored):
+                if card not in (self.possible_pits or explored or self.pit_tiles or self.safe_tiles):
                     self.possible_pits.add(card)
                     props.add(card)
-            
+
             for p in props:
-                prop = (("P", p), False)
-                counterProp = (("P", p), True)
-
-                for c in propCopy:
-                    cProp = (("P", c), True)
-                    ccProp = (("P", c), False)
-
-                    self.kb.tell(MazeClause([(("P", c),True), (("P", counterProp), False)]))
-                    self.kb.tell(MazeClause([(("P", c),False), (("P", prop), True)]))       
-        
+                if len(props) == 3:
+                    self.kb.tell(MazeClause([(("P", p),True)]))
+                elif len(props) == 2:
+                    prop = (("P", p), False)
+                    counterProp = (("P", p), True)
+                elif len(props) == 1:
+                    for c in propCopy:
+                        self.kb.tell(MazeClause([(("P", c),True), (("P", counterProp), False)]))
+                        self.kb.tell(MazeClause([(("P", c),False), (("P", prop), True)]))       
+            
         self.kb.simplify_from_known_locs(self.kb.clauses, self.safe_tiles, self.pit_tiles)
 
         #part 3
@@ -177,13 +182,10 @@ class MazeAgent:
             return True
         elif loc in self.pit_tiles:
             return False 
-        
-        pit_location = self.kb.ask(MazeClause([(("P", loc),True)]))
-        not_pit_location = self.kb.ask(MazeClause([(("P", loc),False)]))
 
-        if pit_location:
+        if self.kb.ask(MazeClause([(("P", loc),True)])):
             return False
-        elif not_pit_location:
+        elif self.kb.ask(MazeClause([(("P", loc),False)])):
             return True
         else:   
             return None
