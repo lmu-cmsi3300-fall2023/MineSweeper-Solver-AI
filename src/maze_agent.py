@@ -61,7 +61,7 @@ class MazeAgent:
         self.kb.tell(MazeClause([((Constants.WRN_FOUR_BLOCK, self.goal),False)]))
     
         #add cardinals to safetiles
-        self.kb.tell(MazeClause([((Constants.PIT_BLOCK, self.env.get_cardinal_locs),False)]))
+        # self.kb.tell(MazeClause([((Constants.PIT_BLOCK, self.env.get_cardinal_locs(self.env._initial_loc,1)),False)]))
         
         #Use this to keep track of the agent's current location
         self.think(perception)      
