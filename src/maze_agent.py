@@ -139,20 +139,19 @@ class MazeAgent:
                         for c in cardSet:
                             self.kb.tell(MazeClause([(("P", c),False)]))
                     case 2:
+                        for p in perms:                      
+                            self.kb.tell(MazeClause([(("P", p[0]),False), (("P", p[1]),False)]))
+                        ans = list()
+                        for c in cardSet:
+                            ans.append((("P", p),True))
+                        self.kb.tell(MazeClause(ans))
+                    case 1:
                         for p in perms:
-                            self.kb.tell(MazeClause([(("P", p),True)]))
-                        ans: frozenset[tuple[int,int]]= set()
-                        ans_copy = ans.copy()
-                        ans_copy= frozenset(ans_copy)
-                        for loc in cardSet:
-                            MazeClause([(("P", loc),True)])
-                    # case 1:
-                    #     for p in perms:
-                    #         self.kb.tell(MazeClause([(("P", p),True)]))
-                    #     ans = list()
-                    #     for c in cardinals:
-                    #         ans.append(MazeClause([(("P", c),False)]))
-                    #     self.kb.tell(ans)
+                            self.kb.tell(MazeClause([(("P", p[0]),True), (("P", p[1]),True)]))
+                        ans = list()
+                        for c in cardSet:
+                            ans.append((("P", c),False))
+                        self.kb.tell(MazeClause(ans))
             
         self.kb.simplify_from_known_locs(self.kb.clauses, self.safe_tiles, self.pit_tiles)
 
