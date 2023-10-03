@@ -65,9 +65,9 @@ class MazeAgent:
         self.kb.tell(MazeClause([(("P", tile), False) for tile in self.env.get_cardinal_locs(self.goal, 1)]))
     
         #add cardinals to safetiles
-        for tile in self.env.get_cardinal_locs(self.env._initial_loc, 1):
-            self.kb.tell(MazeClause([(("P", tile),False)]))
-            self.safe_tiles.add(tile)
+        # for tile in self.env.get_cardinal_locs(self.env._initial_loc, 1):
+        #     self.kb.tell(MazeClause([(("P", tile),False)]))
+        #     self.safe_tiles.add(tile)
 
         #Use this to keep track of the agent's current location
         self.think(perception)      
