@@ -63,11 +63,6 @@ class MazeAgent:
         #goal can not have 4 pits around it
         self.kb.tell(MazeClause([((Constants.WRN_FOUR_BLOCK, self.goal),False)]))
         self.kb.tell(MazeClause([(("P", tile), False) for tile in self.env.get_cardinal_locs(self.goal, 1)]))
-    
-        #add cardinals to safetiles
-        # for tile in self.env.get_cardinal_locs(self.env._initial_loc, 1):
-        #     self.kb.tell(MazeClause([(("P", tile),False)]))
-        #     self.safe_tiles.add(tile)
 
         #Use this to keep track of the agent's current location
         self.think(perception)      
@@ -162,6 +157,9 @@ class MazeAgent:
                         (("P", prop[1]),False)]))
                 
                 self.kb.tell(MazeClause([(("P", l),True) for l in pit_locations]))
+            case "P":
+                self.pit_tiles.add(loc)
+                self.kb.tell(MazeClause([(("P", loc), True)]))
             
         self.kb.simplify_from_known_locs(self.kb.clauses, self.safe_tiles, self.pit_tiles)
 
