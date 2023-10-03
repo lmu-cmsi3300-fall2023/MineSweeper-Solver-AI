@@ -142,19 +142,35 @@ class MazeAgent:
         #2.Distance from goal
         #3.Tile included in most number of props?
 
-        frontierList: list(tuple[int,int]) = list()
+        frontierList: list[tuple[int,int]] = list()
         for f in frontier:
             frontierList.append(f)
 
-        for tile in frontierList:
-            if tile not in self.pit_tiles :
-                #Manhattan Distance for priority
-                mDist = abs(tile[0] - self.goal[0]) + abs(tile[1] - self.goal[1])
-                self.moveOrder.append((tile, mDist)) 
+        # Initialize priority outside the loop
+        priority = 0
 
-        sortedMoveOrder = sorted(self.moveOrder, key=lambda x: x[1])
+        for tile in frontierList:
+            # Update priority based on the current tileType
+            if tileType == ".":
+                priority = 0
+            elif tileType == "1":
+                priority = 1
+            elif tileType == "2":
+                priority = 2
+            elif tileType == "3":
+                priority = 3
+            elif tileType == "P":
+                priority = 4
+
+            # Manhattan Distance for priority
+            mDist = abs(tile[0] - self.goal[0]) + abs(tile[1] - self.goal[1])
+            self.moveOrder.append((tile, mDist))
+
+        # Sort based on priority and Manhattan Distance
+        sortedMoveOrder = sorted(self.moveOrder, key=lambda x: (x[1], -priority))
 
         return sortedMoveOrder[0][0]
+
         # return random.choice(list(frontier))
         
     def is_safe_tile (self, loc: tuple[int, int ]) -> Optional[bool]:
