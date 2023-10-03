@@ -33,10 +33,19 @@ class MazeAgent:
         self.env: "Environment" = env
         self.goal: tuple[int, int] = env.get_goal_loc()
         
+        #add goal to safetiles
         self.kb.tell(MazeClause([((Constants.PIT_BLOCK, self.goal),False)]))
+        
+        #add initial location to safetiles
         self.kb.tell(MazeClause([((Constants.PIT_BLOCK, self.env._initial_loc),False)]))
+        
+        #add cardinals to safetiles
         self.kb.tell(MazeClause([((Constants.PIT_BLOCK, self.env.get_cardinal_locs),False)]))
+        
+        #Use this to keep track of the agent's current location
         self.think(perception)
+        
+        
         # The agent's maze can be manipulated as a tracking mechanic
         # for what it has learned; changes to this maze will be drawn
         # by the environment and is simply for visuals / debugging
