@@ -53,16 +53,16 @@ class MazeAgent:
         self.startLoc = self.env._initial_loc  
         
         #add goal to safetiles
-        self.kb.tell(MazeClause([((Constants.PIT_BLOCK, self.goal),False)]))
+        # self.kb.tell(MazeClause([((Constants.PIT_BLOCK, self.goal),False)]))
         
-        #add initial location to safetiles
-        self.kb.tell(MazeClause([((Constants.PIT_BLOCK, self.env._initial_loc),False)]))
+        # #add initial location to safetiles
+        # self.kb.tell(MazeClause([((Constants.PIT_BLOCK, self.env._initial_loc),False)]))
         
-        #add cardinals to safetiles
-        self.kb.tell(MazeClause([((Constants.PIT_BLOCK, self.env.get_cardinal_locs),False)]))
+        # #add cardinals to safetiles
+        # self.kb.tell(MazeClause([((Constants.PIT_BLOCK, self.env.get_cardinal_locs),False)]))
         
-        #Use this to keep track of the agent's current location
-        self.think(perception)      
+        # #Use this to keep track of the agent's current location
+        # self.think(perception)      
         
     ##################################################################
     # Methods
@@ -129,25 +129,26 @@ class MazeAgent:
             props = set()
             cardinals = list()
 
-
             for card in self.env.get_cardinal_locs(loc, 1):
                 if card not in explored:
                     cardinals.append(card)
                     if card not in (self.possible_pits or self.pit_tiles or self.safe_tiles):
                         self.possible_pits.add(card)
                         props.add(card)
-                        perms = self.permutations(cardinals)
+                perms = self.permutations(cardinals)
+                cardSet = set(cardinals)
+
                 match len(props):
                     case 3:
-                        for c in cardinals:
+                        for c in cardSet:
                             self.kb.tell(MazeClause([(("P", c),False)]))
                     case 2:
                         for p in perms:
                             self.kb.tell(MazeClause([(("P", p),True)]))
-                    #     ans: list[tuple[int,int]]= list()
-                    #     for c in cardinals:
-                    #         ans.append(MazeClause([(("P", c),True)]))
-                    #     self.kb.tell(ans)
+                        ans: list[tuple[int,int]]= list()
+                        # for c in cardSet:
+                        #     ans.append(MazeClause([(("P", c),True)]))
+                        # self.kb.tell(ans)
                     # case 1:
                     #     for p in perms:
                     #         self.kb.tell(MazeClause([(("P", p),True)]))
@@ -264,10 +265,10 @@ class MazeAgent:
         if len(tuple_list) > 3:
             raise ValueError("Input list must contain at most 3 tuples")
         
-        all_permutations = []
+        all_permutations = set()
         for permuted_indices in permutations(range(len(tuple_list)), 2):
-            permutation = [tuple_list[i] for i in permuted_indices]
-            all_permutations.append(permutation)
+            permutation = tuple(tuple_list[i] for i in permuted_indices)
+            all_permutations.add(permutation)
         
         return all_permutations
 
