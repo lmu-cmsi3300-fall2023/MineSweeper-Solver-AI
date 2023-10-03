@@ -145,10 +145,10 @@ class MazeAgent:
                     case 2:
                         for p in perms:
                             self.kb.tell(MazeClause([(("P", p),True)]))
-                        ans: list[tuple[int,int]]= list()
-                        # for c in cardSet:
-                        #     ans.append(MazeClause([(("P", c),True)]))
-                        # self.kb.tell(ans)
+                        ans: frozenset(tuple[int,int])= frozenset()
+                        for c in cardSet:
+                            ans.union(MazeClause([(("P", c),True)]))
+                        self.kb.tell(ans)
                     # case 1:
                     #     for p in perms:
                     #         self.kb.tell(MazeClause([(("P", p),True)]))
