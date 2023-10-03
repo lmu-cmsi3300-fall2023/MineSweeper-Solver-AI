@@ -175,18 +175,41 @@ class MazeAgent:
         # Initialize priority outside the loop
         best_tile = (0,0)
         best_distance = 100
+        weight:float = 1
+        
+        
 
         for tile in frontier:
             # Update priority based on the current tileType
-            if tile in self.safe_tiles:
-                mDist = abs(tile[0] - self.goal[0]) + abs(tile[1] - self.goal[1])
+            if tile in self.pit_tiles:
+                break
+            
+            match tileType:
+                case ".":
+                    weight = 1.25
+                case "3":
+                    weight = 1.5
+                case "2":
+                    weight = 1.5
+                case "1":
+                    weight = 1
+                case "P":
+                    weight = 1
+                    
+            if tile in self.safe_tiles or tile not in self.pit_tiles:
+                mDist = int(abs(tile[0] - self.goal[0]) + abs(tile[1] - self.goal[1]*(weight)))
+                print(mDist)
                 if mDist < best_distance:
                     best_distance = mDist
                     best_tile = tile
+                 
+            
+            
+                    
         if best_tile == (0,0):
             best_tile = min(
                 frontier - self.pit_tiles,
-                key = lambda tile: abs(tile[0] - self.goal[0]) + abs(tile[1] - self.goal[1])
+                key = lambda tile: abs(tile[0] - self.goal[0]) + abs(tile[1] - self.goal[1]*weight)
             )
 
             # Manhattan Distance for priority
