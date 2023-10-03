@@ -5,7 +5,7 @@ from queue import Queue
 from constants import *
 from maze_clause import *
 from maze_knowledge_base import *
-from itertools import permutations
+from itertools import combinations
 
 class MazeAgent:
     '''
@@ -131,7 +131,7 @@ class MazeAgent:
                     if card not in (self.possible_pits or self.pit_tiles or self.safe_tiles):
                         self.possible_pits.add(card)
                         props.add(card)
-                perms = self.permutations(cardinals)
+                perms = combinations(cardinals, 2)
                 cardSet = set(cardinals)
 
                 match len(props):
@@ -256,17 +256,6 @@ class MazeAgent:
                 copySet.add(l)
         
         self.possible_pits = copySet
-
-    def permutations(self, tuple_list = list[tuple[int,int]]):
-        if len(tuple_list) > 3:
-            raise ValueError("Input list must contain at most 3 tuples")
-        
-        all_permutations = set()
-        for permuted_indices in permutations(range(len(tuple_list)), 2):
-            permutation = tuple(tuple_list[i] for i in permuted_indices)
-            all_permutations.add(permutation)
-        
-        return all_permutations
 
 # Declared here to avoid circular dependency
 from environment import Environment
