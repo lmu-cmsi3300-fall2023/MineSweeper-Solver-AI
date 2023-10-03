@@ -121,7 +121,6 @@ class MazeAgent:
             cardinals = list()
 
             for card in self.env.get_cardinal_locs(loc, 1):
-<<<<<<< HEAD
                 if card not in explored:
                     cardinals.append(card)
                     if card not in (self.possible_pits or self.pit_tiles or self.safe_tiles):
@@ -130,18 +129,6 @@ class MazeAgent:
                               
             perms = self.permutations(cardinals)
 
-=======
-                cardinals = cardinals + [card]
-                if card not in (self.possible_pits or explored or self.pit_tiles or self.safe_tiles):
-                    self.possible_pits.add(card)
-                    props.add(card)
-            safe = set()
-            danger = set()
-            for c in cardinals:
-                safe.add([("P", c),False])
-                danger.add([("P", c),True])
-    
->>>>>>> dfcd036f312058f94d245de3fc3e408831b873b1
             match len(props):
                 case 3:
                     for c in cardinals:
