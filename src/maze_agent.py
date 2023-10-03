@@ -34,6 +34,10 @@ class MazeAgent:
         self.env: "Environment" = env
         self.goal: tuple[int, int] = env.get_goal_loc()
         
+        self.kb.tell(MazeClause([((Constants.PIT_BLOCK, self.goal),False)]))
+        self.kb.tell(MazeClause([((Constants.PIT_BLOCK, self.env._initial_loc),False)]))
+        self.kb.tell(MazeClause([((Constants.PIT_BLOCK, self.env.get_cardinal_locs),False)]))
+        self.think(perception)
         # The agent's maze can be manipulated as a tracking mechanic
         # for what it has learned; changes to this maze will be drawn
         # by the environment and is simply for visuals / debugging
@@ -117,6 +121,7 @@ class MazeAgent:
             cardinals = list()
 
             for card in self.env.get_cardinal_locs(loc, 1):
+<<<<<<< HEAD
                 if card not in explored:
                     cardinals.append(card)
                     if card not in (self.possible_pits or self.pit_tiles or self.safe_tiles):
@@ -125,6 +130,18 @@ class MazeAgent:
                               
             perms = self.permutations(cardinals)
 
+=======
+                cardinals = cardinals + [card]
+                if card not in (self.possible_pits or explored or self.pit_tiles or self.safe_tiles):
+                    self.possible_pits.add(card)
+                    props.add(card)
+            safe = set()
+            danger = set()
+            for c in cardinals:
+                safe.add([("P", c),False])
+                danger.add([("P", c),True])
+    
+>>>>>>> dfcd036f312058f94d245de3fc3e408831b873b1
             match len(props):
                 case 3:
                     for c in cardinals:
