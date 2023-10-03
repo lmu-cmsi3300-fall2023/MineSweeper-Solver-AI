@@ -40,7 +40,6 @@ class MazeAgent:
         # by the environment and is simply for visuals / debugging
         # [!] Feel free to change self.maze at will
         self.maze: list = env.get_agent_maze()
-        
         # Standard set of attributes you'll want to maintain
         self.kb: "MazeKnowledgeBase" = MazeKnowledgeBase()
         self.possible_pits: set[tuple[int, int]] = set()
@@ -53,16 +52,19 @@ class MazeAgent:
         self.startLoc = self.env._initial_loc  
         
         #add goal to safetiles
-        # self.kb.tell(MazeClause([((Constants.PIT_BLOCK, self.goal),False)]))
+        self.kb.tell(MazeClause([((Constants.PIT_BLOCK, self.goal),False)]))
         
-        # #add initial location to safetiles
-        # self.kb.tell(MazeClause([((Constants.PIT_BLOCK, self.env._initial_loc),False)]))
+        #add initial location to safetiles
+        self.kb.tell(MazeClause([((Constants.PIT_BLOCK, self.env._initial_loc),False)]))
         
-        # #add cardinals to safetiles
-        # self.kb.tell(MazeClause([((Constants.PIT_BLOCK, self.env.get_cardinal_locs),False)]))
+        #goal can not have 4 pits around it
+        self.kb.tell(MazeClause([((Constants.WRN_FOUR_BLOCK, self.goal),False)]))
+    
+        #add cardinals to safetiles
+        self.kb.tell(MazeClause([((Constants.PIT_BLOCK, self.env.get_cardinal_locs),False)]))
         
-        # #Use this to keep track of the agent's current location
-        # self.think(perception)      
+        #Use this to keep track of the agent's current location
+        self.think(perception)      
         
     ##################################################################
     # Methods
@@ -104,16 +106,10 @@ class MazeAgent:
         #Check if goal, start, and cardinals are in safetiles. 
         #if not, add them to safetiles and update kb to reflect
         tileType = perception["tile"]
-        if self.goal not in self.safe_tiles:
-            self.kb.tell(MazeClause([(("P", self.goal),False)]))
-            self.safe_tiles.add(self.goal)
         
-        if self.startLoc not in self.safe_tiles:
-            self.kb.tell(MazeClause([(("P", self.startLoc),False)]))
-            self.safe_tiles.add(self.env.get_player_loc())
-            for tile in self.env.get_cardinal_locs(loc, 1):
-                self.kb.tell(MazeClause([(("P", tile),False)]))
-                self.safe_tiles.add(tile)
+        for tile in self.env.get_cardinal_locs(loc, 1):
+            self.kb.tell(MazeClause([(("P", tile),False)]))
+            self.safe_tiles.add(tile)
         
         #part 2
         #add truth of current tile
@@ -145,10 +141,11 @@ class MazeAgent:
                     case 2:
                         for p in perms:
                             self.kb.tell(MazeClause([(("P", p),True)]))
-                        ans: frozenset(tuple[int,int])= frozenset()
-                        for c in cardSet:
-                            ans.union(MazeClause([(("P", c),True)]))
-                        self.kb.tell(ans)
+                        ans: frozenset[tuple[int,int]]= set()
+                        ans_copy = ans.copy()
+                        ans_copy= frozenset(ans_copy)
+                        for loc in cardSet:
+                            MazeClause([(("P", loc),True)])
                     # case 1:
                     #     for p in perms:
                     #         self.kb.tell(MazeClause([(("P", p),True)]))
@@ -186,7 +183,7 @@ class MazeAgent:
             elif tileType == "3":
                 priority = 3
             elif tileType == "P":
-                priority = 4
+                priority = 20
 
             # Manhattan Distance for priority
             mDist = abs(tile[0] - self.goal[0]) + abs(tile[1] - self.goal[1])
