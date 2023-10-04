@@ -70,10 +70,6 @@ class MazeAgent:
     ##################################################################
     # Methods
     ##################################################################
-    def tile_to_goal_distance(goal:tuple[int,int], tile:tuple[int,int]) -> int:
-        tile_to_goal = abs(tile[0] - goal[0]) + abs(tile[1] - goal[1])
-        return tile_to_goal
-
     def player_to_goal_distance(tile:tuple[int,int], player:tuple[int,int]) -> int:
         tile_to_player = abs(player[0] - tile[0]) + abs(player[1] - tile[1])
         return tile_to_player
@@ -167,8 +163,21 @@ class MazeAgent:
             case "P":
                 self.pit_tiles.add(loc)
                 self.kb.tell(MazeClause([(("P", loc), True)]))
+
+        for frontier_location in self.env.get_frontier_locs():
+            if self.is_safe_tile(frontier_location):
+                self.safe_tiles.add(frontier_location)
+                self.kb.tell(MazeClause([(("P", loc), False)]))
+            elif not self.is_safe_tile(frontier_location):
+                self.pit_tiles.add(frontier_location)
+                self.kb.tell(MazeClause([(("P", loc), True)]))
+            else:
+                continue
+
+
             
         self.kb.simplify_from_known_locs(self.kb.clauses, self.safe_tiles, self.pit_tiles)
+        # self.kb.simplify_self(self.safe_tiles, self.pit_tiles)
 
         #part 3
         #Check if any possible pits are now definitely safe or not
@@ -180,79 +189,28 @@ class MazeAgent:
         #3.Tile included in most number of props?
 
         # Initialize priority outside the loop
-        best_tile = (0,0)
-        best_distance = 1000
-        weight:float = 1
-        visited = set()
-       
+        best_tile: tuple[int,int] 
+        # def manhattan_distance(loc: tuple[int,int], goal: tuple[int,int]) -> int:
+        #     return abs(loc[0] - goal[0]) + abs(loc[1] - goal[1])   
         
+        if Constants.GOAL_BLOCK in self.env.get_frontier_locs():
+            return Constants.GOAL_BLOCK
+        if len(self.env.get_frontier_locs() - self.pit_tiles) == 0:
+            return random.choice(list(frontier))
         
 
-        for tile in frontier:
-            
-            # Update priority based on the current tileType
-            # if tile in self.pit_tiles:
-            #     continue
-            
-            
-            
-            # match tileType:
-            #     case ".": #if current tile is safe move straight to goal
-            #         if tile not in self.safe_tiles:
-            #             weight = 0
-            #         else:
-            #             weight = 2
-            #     case "3": #if 3, 3/4 + surrounding save tiles probibility of being pit
-            #         weight = 1.75 + (len(self.env.get_cardinal_locs(tile, 1) & self.safe_tiles))/4
-            #     case "2": #if 2, 2/4 + surrounding save tiles probibility of being pit
-            #         weight = 1.5 + (len(self.env.get_cardinal_locs(tile, 1) & self.safe_tiles))/4
-            #     case "1": #if 1, 1/4 + surrounding save tiles probibility of being pit
-            #         weight = 1.25 + (len(self.env.get_cardinal_locs(tile, 1) & self.safe_tiles))/4
-            #     case "P": #if P move towards goal
-            #         weight = 1gig
-                    
-            if tile in self.safe_tiles and tile not in visited:
-                player_loc = self.env.get_player_loc()
-                mDist = MazeAgent.tile_to_goal_distance(self.goal, tile) + MazeAgent.player_to_goal_distance(tile, player_loc)
-                if mDist < best_distance:
-                    best_distance = mDist
-                    best_tile = tile
-            
-                    # print("tile: " ,new_distance)
-                    # print("best: ", best_distance)
-                    
-            elif tile not in self.pit_tiles and tile not in visited:
-                player_loc = self.env.get_player_loc()
-                mDist = MazeAgent.tile_to_goal_distance(self.goal, tile) + MazeAgent.player_to_goal_distance(tile, player_loc)
-                if mDist < best_distance:
-                    best_distance = mDist
-                    best_tile = tile
-                    
-            elif tile in self.safe_tiles:
-                player_loc = self.env.get_player_loc()
-                mDist = MazeAgent.tile_to_goal_distance(self.goal, tile) + MazeAgent.player_to_goal_distance(tile, player_loc)
-                if mDist < best_distance:
-                    best_distance = mDist
-                    best_tile = tile
-                
-                 
-            
-            
-                    
-        if best_tile == (0,0):
-            best_tile = min(
-                frontier - self.pit_tiles,
-                key = lambda tile: abs(tile[0] - self.goal[0]) + abs(tile[1] - self.goal[1]*weight)
-            )
+        manhattan_map: dict(tuple[tuple[int,int], int]) = dict()
+        for tile in (self.env.get_frontier_locs() - self.pit_tiles):
+            if self.is_safe_tile(tile) == False:
+                self.pit_tiles.add(tile)
+                self.kb.tell(MazeClause([(("P", loc), True)]))
+                continue
+            else:
+                manhattan_map[tile] = MazeAgent.player_to_goal_distance(tile, self.goal)
 
-            # Manhattan Distance for priority
+        best_tile = min(manhattan_map, key=manhattan_map.get)
 
-        # Sort based on priority and Manhattan Distance
-        visited.add(best_tile)
         return best_tile
-        
-
-        # return random.choice(list(frontier))
         
     def is_safe_tile (self, loc: tuple[int, int ]) -> Optional[bool]:
         """
