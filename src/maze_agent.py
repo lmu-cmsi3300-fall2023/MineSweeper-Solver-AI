@@ -210,8 +210,7 @@ class MazeAgent:
                 if with_weight < best_distance:
                     best_distance = with_weight
                     best_tile = tile
-                    # print("tile: " ,new_distance)
-                    # print("best: ", best_distance)
+                    print("tile: " ,new_distance)
 
         # Sort based on priority and Manhattan Distance
         if best_tile == (0,0):
@@ -220,6 +219,7 @@ class MazeAgent:
                 key = lambda tile: abs(tile[0] - self.goal[0]) + abs(tile[1] - self.goal[1]*weight)
             )
 
+        print("best: ", best_distance)
         return best_tile
         
     def is_safe_tile (self, loc: tuple[int, int ]) -> Optional[bool]:
