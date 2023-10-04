@@ -114,10 +114,8 @@ class MazeAgent:
 
         pit_locations = self.env.get_cardinal_locs(loc, 1) - self.safe_tiles
         comb = combinations(pit_locations, 2)
-        
-
+     
         match tileType:
-
             case ".":
                 self.kb.tell(MazeClause([(("P", loc),False)]))
                 self.safe_tiles.add(loc)
@@ -176,8 +174,6 @@ class MazeAgent:
         best_tile = (0,0)
         best_distance = 100
         weight:float = 1
-        
-        
 
         for tile in frontier:
             # Update priority based on the current tileType
@@ -195,30 +191,23 @@ class MazeAgent:
                     weight = 1
                 case "P":
                     weight = 1
-                    
+
+            # Manhattan Distance for priority 
             if tile in self.safe_tiles or tile not in self.pit_tiles:
                 mDist = int(abs(tile[0] - self.goal[0]) + abs(tile[1] - self.goal[1]*(weight)))
                 print(mDist)
                 if mDist < best_distance:
                     best_distance = mDist
-                    best_tile = tile
-                 
-            
-            
-                    
+                    best_tile = tile       
+
+        # Sort based on priority and Manhattan Distance          
         if best_tile == (0,0):
             best_tile = min(
                 frontier - self.pit_tiles,
                 key = lambda tile: abs(tile[0] - self.goal[0]) + abs(tile[1] - self.goal[1]*weight)
             )
 
-            # Manhattan Distance for priority
-
-        # Sort based on priority and Manhattan Distance
         return best_tile
-        
-
-        # return random.choice(list(frontier))
         
     def is_safe_tile (self, loc: tuple[int, int ]) -> Optional[bool]:
         """
