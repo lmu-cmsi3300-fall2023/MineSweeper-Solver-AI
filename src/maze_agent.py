@@ -70,6 +70,13 @@ class MazeAgent:
     ##################################################################
     # Methods
     ##################################################################
+    def tile_to_goal_distance(goal:tuple[int,int], tile:tuple[int,int]) -> int:
+        tile_to_goal = abs(tile[0] - goal[0]) + abs(tile[1] - goal[1])
+        return tile_to_goal
+
+    def player_to_goal_distance(tile:tuple[int,int], player:tuple[int,int]) -> int:
+        tile_to_player = abs(player[0] - tile[0]) + abs(player[1] - tile[1])
+        return tile_to_player
     
     def think(self, perception: dict) -> tuple[int, int]:
         """
@@ -203,11 +210,9 @@ class MazeAgent:
                     
             if tile in self.safe_tiles or tile not in self.pit_tiles:
                 player_loc = self.env.get_player_loc()
-                mDist = int(abs(tile[0] - self.goal[0]) + abs(tile[1] - self.goal[1]))
-                new_distance = mDist + int(abs(tile[0] - player_loc[0]) + abs(tile[1] - player_loc[1]))
-                with_weight = new_distance * weight
-                if with_weight < best_distance:
-                    best_distance = with_weight
+                mDist = MazeAgent.tile_to_goal_distance(self.goal, tile) + MazeAgent.player_to_goal_distance(tile, player_loc)
+                if mDist < best_distance:
+                    best_distance = mDist
                     best_tile = tile
                     # print("tile: " ,new_distance)
                     # print("best: ", best_distance)
@@ -261,6 +266,8 @@ class MazeAgent:
             return True
         else:   
             return None
+    
+    
         
     def scanKB (self, loc: tuple[int, int]) -> None:
         """
