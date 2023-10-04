@@ -174,34 +174,43 @@ class MazeAgent:
 
         # Initialize priority outside the loop
         best_tile = (0,0)
-        best_distance = 100
+        best_distance = 1000
         weight:float = 1
+       
         
         
 
         for tile in frontier:
+            
             # Update priority based on the current tileType
             if tile in self.pit_tiles:
-                break
+                continue
             
-            match tileType:
-                case ".":
-                    weight = 1.25
-                case "3":
-                    weight = 1.5
-                case "2":
-                    weight = 1.5
-                case "1":
-                    weight = 1
-                case "P":
-                    weight = 1
+            # match tileType:
+            #     case ".": #if current tile is safe move straight to goal
+            #         if tile not in self.safe_tiles:
+            #             weight = 0
+            #         else:
+            #             weight = 2
+            #     case "3": #if 3, 3/4 + surrounding save tiles probibility of being pit
+            #         weight = 1.75 + (len(self.env.get_cardinal_locs(tile, 1) & self.safe_tiles))/4
+            #     case "2": #if 2, 2/4 + surrounding save tiles probibility of being pit
+            #         weight = 1.5 + (len(self.env.get_cardinal_locs(tile, 1) & self.safe_tiles))/4
+            #     case "1": #if 1, 1/4 + surrounding save tiles probibility of being pit
+            #         weight = 1.25 + (len(self.env.get_cardinal_locs(tile, 1) & self.safe_tiles))/4
+            #     case "P": #if P move towards goal
+            #         weight = 1
                     
             if tile in self.safe_tiles or tile not in self.pit_tiles:
-                mDist = int(abs(tile[0] - self.goal[0]) + abs(tile[1] - self.goal[1]*(weight)))
-                print(mDist)
-                if mDist < best_distance:
-                    best_distance = mDist
+                player_loc = self.env.get_player_loc()
+                mDist = int(abs(tile[0] - self.goal[0]) + abs(tile[1] - self.goal[1]))
+                new_distance = mDist + int(abs(tile[0] - player_loc[0]) + abs(tile[1] - player_loc[1]))
+                with_weight = new_distance * weight
+                if with_weight < best_distance:
+                    best_distance = with_weight
                     best_tile = tile
+                    # print("tile: " ,new_distance)
+                    # print("best: ", best_distance)
                  
             
             
