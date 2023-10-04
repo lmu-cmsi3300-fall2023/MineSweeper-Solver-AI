@@ -176,37 +176,41 @@ class MazeAgent:
         weight:float = 1
 
         for tile in frontier:
+            
+            if tileType == Constants.GOAL_BLOCK:
+                return tile
             # Update priority based on the current tileType
-            if tile in self.pit_tiles:
-                break
             
             match tileType:
                 case ".":
-                    weight = 1.25
+                    weight = 2
                 case "3":
-                    weight = 1.5
+                    weight = 3
                 case "2":
                     weight = 1.5
                 case "1":
-                    weight = 1
+                    weight = .25
                 case "P":
-                    weight = 1
-
-            # Manhattan Distance for priority 
-            if tile in self.safe_tiles or tile not in self.pit_tiles:
-                mDist = int(abs(tile[0] - self.goal[0]) + abs(tile[1] - self.goal[1]*(weight)))
-                print(mDist)
+                    weight = 3
+                    
+            if tile in frontier - self.pit_tiles:
+                mDist = int(abs(tile[0] - self.goal[0]) + abs(tile[1] - self.goal[1])*(weight))
                 if mDist < best_distance:
                     best_distance = mDist
-                    best_tile = tile       
-
-        # Sort based on priority and Manhattan Distance          
+                    best_tile = tile
+                 
+            
+            
+                    
         if best_tile == (0,0):
             best_tile = min(
                 frontier - self.pit_tiles,
                 key = lambda tile: abs(tile[0] - self.goal[0]) + abs(tile[1] - self.goal[1]*weight)
             )
 
+            # Manhattan Distance for priority
+
+        # Sort based on priority and Manhattan Distance
         return best_tile
         
     def is_safe_tile (self, loc: tuple[int, int ]) -> Optional[bool]:
