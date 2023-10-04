@@ -39,19 +39,16 @@ class MazeAgent:
         # for what it has learned; changes to this maze will be drawn
         # by the environment and is simply for visuals / debugging
         # [!] Feel free to change self.maze at will
-        
         self.maze: list = env.get_agent_maze()
-        
-        
         # Standard set of attributes you'll want to maintain
         self.kb: "MazeKnowledgeBase" = MazeKnowledgeBase()
         self.possible_pits: set[tuple[int, int]] = set()
         self.safe_tiles: set[tuple[int, int]] = set()
         self.pit_tiles: set[tuple[int, int]] = set()
+        initial_loc: tuple[int, int] = env.get_player_loc()
         
         # [!] TODO: Initialize any other knowledge-related attributes for
         # agent here, or any other record-keeping attributes you'd like
-        
         self.moveOrder: list[tuple[tuple[int, int], int]] = list()
         self.startLoc = self.env._initial_loc  
         
@@ -73,41 +70,6 @@ class MazeAgent:
     ##################################################################
     # Methods
     ##################################################################
-    
-    def tile_to_goal_distance(goal:tuple[int,int], tile:tuple[int,int]) -> int:
-        """
-        Returns the Manhattan Distance between the goal and the tile
-        
-        Parameters:
-            goal (tuple[int,int]):
-                The goal location
-            tile (tuple[int,int]):
-                The tile location
-                
-        Returns:
-            int:
-                The Manhattan Distance between the goal and the tile
-        """
-        tile_to_goal = abs(tile[0] - goal[0]) + abs(tile[1] - goal[1])
-        return tile_to_goal
-
-    def player_to_goal_distance(tile:tuple[int,int], player:tuple[int,int]) -> int:
-        """
-        Returns the Manhattan Distance between the player and the tile
-        
-        Parameters:
-            tile (tuple[int,int]):
-                The tile location
-            player (tuple[int,int]):
-                The player location
-                
-        Returns:
-            int:
-                The Manhattan Distance between the player and the tile
-        """
-        tile_to_player = abs(player[0] - tile[0]) + abs(player[1] - tile[1])
-        return tile_to_player
-    
     
     def think(self, perception: dict) -> tuple[int, int]:
         """
@@ -135,27 +97,25 @@ class MazeAgent:
                 The maze location along the frontier that your agent will try to
                 move into next.
         """
-        
+        frontier = self.env.get_frontier_locs()
         # [!] TODO! Agent is currently just making a random choice from the
         # frontier -- use logic and your own strategy to improve this!
-        
-        frontier = self.env.get_frontier_locs()
         loc = self.env.get_player_loc()
         
         #part 1
         #Check if goal, start, and cardinals are in safetiles. 
-        # if not, add them to safetiles and update kb to reflect
+        #if not, add them to safetiles and update kb to reflect
         tileType = perception["tile"]
-        
         
         #part 2
         #add truth of current tile
         pit = False if tileType == "P" else True
         self.kb.tell(MazeClause([(("P", tileType),pit)]))
+
         pit_locations = self.env.get_cardinal_locs(loc, 1) - self.safe_tiles
         comb = combinations(pit_locations, 2)
         
-        #add truth of cardinals
+
         match tileType:
 
             case ".":
@@ -185,7 +145,7 @@ class MazeAgent:
                     self.kb.tell(MazeClause([
                         (("P", prop[0]),True),
                         (("P", prop[1]),True)]))
-                    
+                
                 self.kb.tell(MazeClause([(("P", l),False) for l in pit_locations]))
             case "1":
                 self.safe_tiles.add(loc)
@@ -200,7 +160,7 @@ class MazeAgent:
             case "P":
                 self.pit_tiles.add(loc)
                 self.kb.tell(MazeClause([(("P", loc), True)]))
-           
+            
         self.kb.simplify_from_known_locs(self.kb.clauses, self.safe_tiles, self.pit_tiles)
 
         #part 3
@@ -214,35 +174,51 @@ class MazeAgent:
 
         # Initialize priority outside the loop
         best_tile = (0,0)
-
-        #Priority for sorting: 
-        #1.Number of warning tiles
-        #2.Distance from goal
-        #3.Tile included in most number of props?
-
-        # Initialize priority outside the loop
-        best_tile: tuple[int,int] 
-        # def manhattan_distance(loc: tuple[int,int], goal: tuple[int,int]) -> int:
-        #     return abs(loc[0] - goal[0]) + abs(loc[1] - goal[1])   
+        best_distance = 100
+        weight:float = 1
         
-        if Constants.GOAL_BLOCK in self.env.get_frontier_locs():
-            return Constants.GOAL_BLOCK
-        if len(self.env.get_frontier_locs() - self.pit_tiles) == 0:
-            return random.choice(list(frontier))
         
 
-        manhattan_map: dict(tuple[tuple[int,int], int]) = dict()
-        for tile in (self.env.get_frontier_locs() - self.pit_tiles):
-            if self.is_safe_tile(tile) == False:
-                self.pit_tiles.add(tile)
-                self.kb.tell(MazeClause([(("P", loc), True)]))
-                continue
-            else:
-                manhattan_map[tile] = MazeAgent.player_to_goal_distance(tile, self.goal)
+        for tile in frontier:
+            # Update priority based on the current tileType
+            if tile in self.pit_tiles:
+                break
+            
+            match tileType:
+                case ".":
+                    weight = 1.25
+                case "3":
+                    weight = 1.5
+                case "2":
+                    weight = 1.5
+                case "1":
+                    weight = 1
+                case "P":
+                    weight = 1
+                    
+            if tile in self.safe_tiles or tile not in self.pit_tiles:
+                mDist = int(abs(tile[0] - self.goal[0]) + abs(tile[1] - self.goal[1]*(weight)))
+                print(mDist)
+                if mDist < best_distance:
+                    best_distance = mDist
+                    best_tile = tile
+                 
+            
+            
+                    
+        if best_tile == (0,0):
+            best_tile = min(
+                frontier - self.pit_tiles,
+                key = lambda tile: abs(tile[0] - self.goal[0]) + abs(tile[1] - self.goal[1]*weight)
+            )
 
-        best_tile = min(manhattan_map, key=manhattan_map.get)
+            # Manhattan Distance for priority
 
+        # Sort based on priority and Manhattan Distance
         return best_tile
+        
+
+        # return random.choice(list(frontier))
         
     def is_safe_tile (self, loc: tuple[int, int ]) -> Optional[bool]:
         """
@@ -276,8 +252,6 @@ class MazeAgent:
             return True
         else:   
             return None
-    
-    
         
     def scanKB (self, loc: tuple[int, int]) -> None:
         """
