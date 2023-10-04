@@ -161,7 +161,7 @@ class MazeAgent:
                 self.kb.tell(MazeClause([(("P", loc), True)]))
             
         self.kb.simplify_from_known_locs(self.kb.clauses, self.safe_tiles, self.pit_tiles)
-        self.kb.simplify_self(self.pit_tiles, self.safe_tiles)
+        # self.kb.simplify_self(self.pit_tiles, self.safe_tiles)
         #part 3
         #Check if any possible pits are now definitely safe or not
         self.scanKB(loc)
@@ -183,8 +183,8 @@ class MazeAgent:
 
             distance = 0
 
-            # if float(abs(tile[0] - loc[0]) - abs(tile[1] - loc[1])) > 1:
-            #     distance += (abs(tile[0] - loc[0]) + abs(tile[1] - loc[1]))
+            if float(abs(tile[0] - loc[0]) - abs(tile[1] - loc[1])) > 1:
+                distance += (abs(tile[0] - loc[0]) + abs(tile[1] - loc[1]))
 
             match tileType:
                 case ".":
